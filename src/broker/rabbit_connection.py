@@ -1,9 +1,9 @@
 import json
-import logging
 from dataclasses import dataclass
 from aio_pika import connect_robust, Message
 from aio_pika.abc import AbstractRobustConnection, AbstractRobustChannel
 
+from src.logger import logger
 from src.config import settings
 
 
@@ -20,14 +20,15 @@ class RabbitConnection:
     def status(self) -> bool:
         """
             Checks if connection established
-
-            :return: True if connection established
         """
         if self.connection.is_closed or self.channel.is_closed:
             return False
         return True
 
     async def _clear(self) -> None:
+        """
+            Clear Connection
+        """
         if not self.channel.is_closed:
             await self.channel.close()
         if not self.connection.is_closed:
@@ -38,37 +39,28 @@ class RabbitConnection:
 
     async def connect(self) -> None:
         """
-        Establish connection with the RabbitMQ
-
-        :return: None
+            Establish connection with the RabbitMQ
         """
-        logging.info(CONNECTING)
+        logger.info(CONNECTING)
         try:
             self.connection = await connect_robust(settings.build_rabbit_url())
             self.channel = await self.connection.channel(publisher_confirms=False)
-            logging.info(CONNECTED)
+            logger.info(CONNECTED)
         except Exception as e:
             await self._clear()
-            logging.error(e.__dict__)
+            logger.error(e.__dict__)
 
     async def disconnect(self) -> None:
         """
-        Disconnect and clear connections from RabbitMQ
-
-        :return: None
+            Disconnect and clear connections from RabbitMQ
         """
         await self._clear()
 
-    async def send_messages(
-            self,
-            messages: list | dict,
-            routing_key: str = settings.RABBITMQ_QUEUE
-    ) -> None:
+    async def send_messages(self,
+                            messages: list | dict,
+                            routing_key: str = settings.RABBITMQ_QUEUE) -> None:
         """
             Public message or messages to the RabbitMQ queue.
-
-            :param messages: list or dict with messages objects.
-            :param routing_key: Routing key of RabbitMQ, not required. Tip: the same as in the consumer.
         """
         if not self.channel:
             raise RuntimeError(NOT_CONNECTED)
