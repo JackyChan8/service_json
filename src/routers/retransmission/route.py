@@ -1,6 +1,7 @@
 from fastapi import APIRouter, status
 
 from src.routers.retransmission import schemas
+from src.broker.rabbit_connection import rabbit_connection
 
 
 router = APIRouter(prefix='/retransmission', tags=['retransmission'])
@@ -15,3 +16,8 @@ async def retransmission_json(data: schemas.AnyJson):
     """
 
     print('data: ', data)
+    message = {
+        'type': 'test_message',
+        'message': 'Test message text'
+    }
+    await rabbit_connection.send_messages(messages=message)
