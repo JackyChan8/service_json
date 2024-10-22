@@ -16,4 +16,4 @@ RUN pip install -r requirements.txt
 EXPOSE 8000
 
 # Run application
-CMD ["bash", "-c", "uvicorn main:app --reload"]
+CMD ["bash", "-c", "while !</dev/tcp/db/5432; do sleep 1; done; alembic upgrade head; uvicorn main:app --reload"]

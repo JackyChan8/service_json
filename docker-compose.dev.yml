@@ -5,23 +5,22 @@ services:
       - '8000:8000'
     volumes:
       - .:/opt/app
-    command: bash -c "uvicorn main:app --reload --workers 1 --host 0.0.0.0 --port 8000"
+    command: bash -c "while !</dev/tcp/db/5432; do sleep 1; done; alembic upgrade head; uvicorn main:app --reload --workers 1 --host 0.0.0.0 --port 8000"
     env_file:
       - .env
     depends_on:
-      rabbit:
+      db:
         condition: service_healthy
 
-  rabbit:
-    image: rabbitmq:4.0.2-management
-    restart: always
+  db:
+    image: postgres
     ports:
-      - '15672:15672'
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
     healthcheck:
-      test: ['CMD', 'rabbitmqctl', 'status']
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
-      timeout: 10s
+      timeout: 5s
       retries: 5
-    env_file:
-      - .env
-

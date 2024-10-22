@@ -20,6 +20,23 @@ class AppSettings(BaseSettings):
     RABBITMQ_DEFAULT_PASS: SecretStr
     RABBITMQ_LOCAL_HOST_NAME: str
 
+    # Postgres
+    POSTGRES_HOST: str
+    POSTGRES_PORT: int
+    POSTGRES_USER: str
+    POSTGRES_PASS: SecretStr
+    POSTGRES_NAME: str
+
+    def build_postgres_url(self, protocol_db: str = 'postgresql+asyncpg') -> str:
+        """
+            Build Postgres URL
+            :param protocol_db protocol database
+            :return: str
+        """
+        return (f"{protocol_db}://"
+                f"{self.POSTGRES_USER}:{self.POSTGRES_PASS.get_secret_value()}@"
+                f"{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_NAME}")
+
     def build_rabbit_url(self):
         """
             Build Rabbit URL

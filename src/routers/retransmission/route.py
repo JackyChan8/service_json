@@ -1,7 +1,14 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Depends, status
 
-from src.routers.retransmission import schemas
-from src.broker.rabbit_connection import rabbit_connection
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.routers.retransmission import (
+    schemas as retransmission_schema,
+    services as retransmission_service,
+)
+from src.database import get_async_session
+from src.schemas import schemas as global_schemas
+from src.exceptions import exceptions as global_exceptions
 
 
 router = APIRouter(prefix='/retransmission', tags=['retransmission'])
@@ -10,14 +17,25 @@ router = APIRouter(prefix='/retransmission', tags=['retransmission'])
              description='Retransmission json',
              status_code=status.HTTP_200_OK,
              responses={})
-async def retransmission_json(data: schemas.AnyJson):
+async def retransmission_json(data: retransmission_schema.AnyJson, session: AsyncSession = Depends(get_async_session)):
     """
         Retransmission JSON
     """
 
-    print('data: ', data)
-    message = {
-        'type': 'test_message',
-        'message': 'Test message text'
-    }
-    await rabbit_connection.send_messages(messages=message)
+    data_json = data.root
+    data_schemas = retransmission_schema.PortfolioSchema(**data_json)
+
+    # Create
+    is_create = await retransmission_service.create_portfolio(data_schemas, session)
+
+    if not is_create:
+        raise global_exceptions.MyHTTPException(
+            status=global_schemas.StatusResponseEnum.ERROR,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message='An error occurred while adding portfolio',
+        )
+    raise global_exceptions.MyHTTPException(
+        status=global_schemas.StatusResponseEnum.SUCCESS,
+        status_code=status.HTTP_201_CREATED,
+        message='Successfully added portfolio',
+    )
