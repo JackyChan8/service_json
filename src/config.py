@@ -13,19 +13,19 @@ class AppSettings(BaseSettings):
     APP_SUMMARY: str
     APP_DESCRIPTION: str
 
-    # RabbitMQ
-    RABBITMQ_QUEUE: str
-    RABBITMQ_LOCAL_PORT: int
-    RABBITMQ_DEFAULT_USER: str
-    RABBITMQ_DEFAULT_PASS: SecretStr
-    RABBITMQ_LOCAL_HOST_NAME: str
-
     # Postgres
     POSTGRES_HOST: str
     POSTGRES_PORT: int
     POSTGRES_USER: str
     POSTGRES_PASS: SecretStr
     POSTGRES_NAME: str
+
+    # Postgres Test
+    TEST_POSTGRES_HOST: str
+    TEST_POSTGRES_PORT: int
+    TEST_POSTGRES_USER: str
+    TEST_POSTGRES_PASS: SecretStr
+    TEST_POSTGRES_NAME: str
 
     def build_postgres_url(self, protocol_db: str = 'postgresql+asyncpg') -> str:
         """
@@ -37,13 +37,13 @@ class AppSettings(BaseSettings):
                 f"{self.POSTGRES_USER}:{self.POSTGRES_PASS.get_secret_value()}@"
                 f"{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_NAME}")
 
-    def build_rabbit_url(self):
+    def build_postgres_test_url(self, protocol_db: str = 'postgresql+asyncpg'):
         """
-            Build Rabbit URL
+            Build Postgres test URL
         """
-        return (f'amqp://'
-                f'{self.RABBITMQ_DEFAULT_USER}:{self.RABBITMQ_DEFAULT_PASS.get_secret_value()}@'
-                f'{self.RABBITMQ_LOCAL_HOST_NAME}:{self.RABBITMQ_LOCAL_PORT}/')
+        return (f"{protocol_db}://"
+                f"{self.TEST_POSTGRES_USER}:{self.TEST_POSTGRES_PASS.get_secret_value()}@"
+                f"{self.TEST_POSTGRES_HOST}:{self.TEST_POSTGRES_PORT}/{self.TEST_POSTGRES_NAME}")
 
     class Config:
         env_file = '.env'

@@ -1,0 +1,8 @@
+services:
+  db-test:
+    image: postgres
+    ports:
+      - '7432:5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres

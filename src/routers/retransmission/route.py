@@ -11,15 +11,38 @@ from src.schemas import schemas as global_schemas
 from src.exceptions import exceptions as global_exceptions
 
 
-router = APIRouter(prefix='/retransmission', tags=['retransmission'])
+router = APIRouter(prefix='/portfolio', tags=['portfolio'])
 
-@router.post(path='/send',
-             description='Retransmission json',
-             status_code=status.HTTP_200_OK,
-             responses={})
-async def retransmission_json(data: retransmission_schema.AnyJson, session: AsyncSession = Depends(get_async_session)):
+@router.post(path='/add',
+             description='Add Portfolio',
+             status_code=status.HTTP_201_CREATED,
+             responses={
+                 status.HTTP_201_CREATED: {
+                     'description': 'Портфолио успешно добавлено',
+                     'content': {
+                         'application/json': {
+                             'schema': {
+                                 'type': 'object',
+                                 'properties': {'detail': 'string'}
+                             }
+                         }
+                     }
+                 },
+                 status.HTTP_500_INTERNAL_SERVER_ERROR: {
+                     'description': 'Произошла ошибка при добавлении портфолио в БД',
+                     'content': {
+                         'application/json': {
+                             'schema': {
+                                 'type': 'object',
+                                 'properties': {'detail': 'string'}
+                             }
+                         }
+                     }
+                 },
+             })
+async def add_portfolio(data: retransmission_schema.AnyJson, session: AsyncSession = Depends(get_async_session)):
     """
-        Retransmission JSON
+        Portfolio Add
     """
 
     data_json = data.root

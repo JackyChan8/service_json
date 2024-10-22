@@ -1,6 +1,5 @@
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import insert
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.logger import logger
 from src.models import PortfolioV01

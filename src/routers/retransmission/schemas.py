@@ -1,4 +1,4 @@
-from typing import Union, Any
+from typing import Union, Any, Optional
 from datetime import datetime, date
 
 from pydantic import BaseModel, RootModel, field_validator
@@ -18,21 +18,21 @@ class PortfolioSchema(BaseModel):
     kontragent: str
     dltype: str
     dlnum: str
-    dldate: date
+    dldate: Optional[date] = None
     plquan: int
-    price: int
-    sumavans: int
-    sumlp: int
-    sumvp: int
-    sumdl: int
+    price: float
+    sumavans: float
+    sumlp: float
+    sumvp: float
+    sumdl: float
     suminv: float
     valos: float
     sumos: float
-    fpay: int
-    opay: int
-    statdate: date
-    admdate: date
-    admavdldate: date
+    fpay: float
+    opay: float
+    statdate: Optional[date] = None
+    admdate: Optional[date] = None
+    admavdldate: Optional[date] = None
     supp: str
     catavto: str
     comtr: str
@@ -48,13 +48,13 @@ class PortfolioSchema(BaseModel):
     ist: str
     secl: str
     addtype: str
-    exdate: date
+    exdate: Optional[date] = None
     rep: str
     purp: str
-    val: int
+    val: float
     addinc: int
-    avans: int
-    bonus: int
+    avans: float
+    bonus: float
     agsum: int
     dua: str
     dup: str
@@ -65,5 +65,8 @@ class PortfolioSchema(BaseModel):
     @field_validator('dldate', 'statdate', 'admdate', 'admavdldate', 'exdate', mode='before')
     def parse_date(cls, value):
         if isinstance(value, str):
-            return datetime.strptime(value, '%d-%m-%Y').date()  # Укажите нужный формат
+            if len(value) > 0:
+                return datetime.strptime(value, '%d-%m-%Y').date()  # Укажите нужный формат
+            else:
+                return None
         return value
